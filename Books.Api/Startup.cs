@@ -40,6 +40,10 @@ namespace Books.Api
             // DbContext is registered with a scoped lifetime, so this must be the same lifetime or less
             services.AddScoped<IBooksRepository, BooksRepository>();
 
+            Mapper.Initialize(cfg => {
+                cfg.AddProfile<BooksProfile>();
+            });
+
             services.AddAutoMapper();
         }
 
