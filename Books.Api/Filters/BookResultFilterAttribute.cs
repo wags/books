@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -17,7 +18,7 @@ namespace Books.Api.Filters
                 return;
             }
 
-            //resultFromAction.Value
+            resultFromAction.Value = Mapper.Map<Models.Book>(resultFromAction.Value);
 
             await next();
         }
