@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Books.Api.Contexts;
 using Books.Api.Entities;
@@ -24,7 +25,14 @@ namespace Books.Api.Services
 
         public async Task<IEnumerable<Book>> GetBooksAsync()
         {
+            await _context.Database.ExecuteSqlCommandAsync("WAITFOR DELAY '00:00:02';");
             return await _context.Books.Include(b => b.Author).ToListAsync();
+        }
+
+        public IEnumerable<Book> GetBooks()
+        {
+            _context.Database.ExecuteSqlCommand("WAITFOR DELAY '00:00:02';");
+            return _context.Books.Include(b => b.Author).ToList();
         }
 
         public void Dispose()
