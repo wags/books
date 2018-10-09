@@ -12,6 +12,7 @@ namespace Books.Api.Controllers
 {
     [Route("api/bookcollections")]
     [ApiController]
+    [BooksResultFilter]
     public class BookCollectionsController : ControllerBase
     {
         private readonly IBooksRepository _booksRepository;
@@ -24,7 +25,6 @@ namespace Books.Api.Controllers
         }
 
         [HttpGet("({bookIds})", Name = "GetBookCollection")]
-        [BooksResultFilter]
         public async Task<IActionResult> GetBookCollection(
             [ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> bookIds)
         {
@@ -39,7 +39,6 @@ namespace Books.Api.Controllers
         }
 
         [HttpPost]
-        [BooksResultFilter]
         public async Task<IActionResult> CreateBookCollection([FromBody] IEnumerable<BookForCreation> bookCollection)
         {
             var bookEntities = _mapper.Map<IEnumerable<Entities.Book>>(bookCollection);
