@@ -29,10 +29,32 @@ namespace Books.Api.Services
             return await _context.Books.Include(b => b.Author).ToListAsync();
         }
 
+        public async Task<IEnumerable<Entities.Book>> GetBooksAsync(IEnumerable<Guid> bookIds)
+        {
+            return await _context.Books.Where(b => bookIds.Contains(b.Id))
+                .Include(b => b.Author).ToListAsync();
+        }
+
         public IEnumerable<Book> GetBooks()
         {
             _context.Database.ExecuteSqlCommand("WAITFOR DELAY '00:00:02';");
             return _context.Books.Include(b => b.Author).ToList();
+        }
+
+        public void AddBook(Book bookToAdd)
+        {
+            if (bookToAdd == null)
+            {
+                throw new ArgumentNullException(nameof(bookToAdd));
+            }
+
+            _context.Add(bookToAdd);
+        }
+
+        public async Task<bool> SaveChangesAsync()
+        {
+            // Return true if 1 or more entities were changed
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public void Dispose()
