@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Books.Api.Contexts;
 using Books.Api.Entities;
@@ -15,6 +16,7 @@ namespace Books.Api.Services
     {
         private BooksContext _context;
         private readonly IHttpClientFactory _httpClientFactory;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public BooksRepository(BooksContext context, IHttpClientFactory httpClientFactory)
         {
@@ -60,12 +62,13 @@ namespace Books.Api.Services
         {
             var httpClient = _httpClientFactory.CreateClient();
             var bookCovers = new List<BookCover>();
+            _cancellationTokenSource = new CancellationTokenSource();
 
             // Create a list of fake book covers
             var bookCoverUrls = new[]
             {
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover1",
-                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover2",
+                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover2?returnFault=true",
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover3",
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover4",
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover5",
@@ -87,7 +90,7 @@ namespace Books.Api.Services
             var downloadBookCoverTasksQuery =
                 from bookCoverUrl
                 in bookCoverUrls
-                select DownloadBookCoverAsync(httpClient, bookCoverUrl);
+                select DownloadBookCoverAsync(httpClient, bookCoverUrl, _cancellationTokenSource.Token);
 
             // Start the tasks
             var downloadBookCoverTasks = downloadBookCoverTasksQuery.ToList();
@@ -95,10 +98,15 @@ namespace Books.Api.Services
             return await Task.WhenAll(downloadBookCoverTasks);
         }
 
-        private async Task<BookCover> DownloadBookCoverAsync(HttpClient httpClient, string bookCoverUrl)
+        private async Task<BookCover> DownloadBookCoverAsync(HttpClient httpClient, string bookCoverUrl, CancellationToken cancellationToken)
         {
             var response = await httpClient
-                .GetAsync(bookCoverUrl);
+                .GetAsync(bookCoverUrl, cancellationToken);
+
+            // If we ever need to manually check for cancellation requested
+            // cancellationToken.IsCancellationRequested
+            // or
+            // cancellationToken.ThrowIfCancellationRequested
 
             if (response.IsSuccessStatusCode)
             {
@@ -106,6 +114,9 @@ namespace Books.Api.Services
                     await response.Content.ReadAsStringAsync());
                 return bookCover;
             }
+
+            // Trigger a cancellation if the response from the API isn't successful
+            _cancellationTokenSource.Cancel();
 
             return null;
         }
@@ -148,6 +159,11 @@ namespace Books.Api.Services
                 {
                     _context.Dispose();
                     _context = null;
+                }
+                if (_cancellationTokenSource != null)
+                {
+                    _cancellationTokenSource.Dispose();
+                    _cancellationTokenSource = null;
                 }
             }
         }
