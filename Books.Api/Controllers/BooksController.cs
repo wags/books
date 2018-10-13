@@ -32,7 +32,7 @@ namespace Books.Api.Controllers
         }
 
         [HttpGet]
-        [BookResultFilter]
+        [BookWithCoversResultFilter]
         [Route("{id}", Name = "GetBook")]
         public async Task<IActionResult> GetBook(Guid id)
         {
@@ -54,7 +54,7 @@ namespace Books.Api.Controllers
             // This exposes .book and .bookCovers... much better!
 
             // Shorthand for the Tuple right in the return statement
-            return Ok((book: bookEntity, bookCovers: bookCovers));
+            return Ok((bookEntity, bookCovers));
         }
 
         [HttpPost]
