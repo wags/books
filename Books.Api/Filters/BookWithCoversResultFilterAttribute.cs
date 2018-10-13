@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
+using Books.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -28,6 +30,10 @@ namespace Books.Api.Filters
             // Cleanest way (no need to use the names):
             var (book, bookCovers) = ((Entities.Book,
                 IEnumerable<ExternalModels.BookCover>))resultFromAction.Value;
+
+            var mappedBook = Mapper.Map<BookWithCovers>(book);
+
+            resultFromAction.Value = Mapper.Map(bookCovers, mappedBook);
 
             await next();
         }
