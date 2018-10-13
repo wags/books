@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
 using Books.Api.Filters;
@@ -31,7 +32,7 @@ namespace Books.Api.Controllers
         }
 
         [HttpGet]
-        [BookResultFilter]
+        [BookWithCoversResultFilter]
         [Route("{id}", Name = "GetBook")]
         public async Task<IActionResult> GetBook(Guid id)
         {
@@ -41,7 +42,19 @@ namespace Books.Api.Controllers
                 return NotFound();
             }
 
-            return Ok(bookEntity);
+            var bookCovers = await _booksRepository.GetBookCoversAsync(id);
+
+            //var propertyBag = new Tuple<Entities.Book, IEnumerable<ExternalModels.BookCover>>(
+            //    bookEntity, bookCovers);
+            // This old way would then allow us to access properties called .item1 and .item2 (not super clear)
+
+            // Improved way in C# 7: Value Tuple structure (value type representation of the Tuple object)
+            //(Entities.Book book, IEnumerable<ExternalModels.BookCover> bookCovers) propertyBag =
+            //    (bookEntity, bookCovers);
+            // This exposes .book and .bookCovers... much better!
+
+            // Shorthand for the Tuple right in the return statement
+            return Ok((bookEntity, bookCovers));
         }
 
         [HttpPost]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Books.Api.ExternalModels;
 
 namespace Books.Api.Services
 {
@@ -13,6 +14,10 @@ namespace Books.Api.Services
         Task<IEnumerable<Entities.Book>> GetBooksAsync();
 
         Task<IEnumerable<Entities.Book>> GetBooksAsync(IEnumerable<Guid> bookIds);
+
+        Task<BookCover> GetBookCoverAsync(string coverId);
+
+        Task<IEnumerable<BookCover>> GetBookCoversAsync(Guid bookId);
 
         Task<Entities.Book> GetBookAsync(Guid id);
 
