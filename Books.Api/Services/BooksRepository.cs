@@ -8,6 +8,7 @@ using Books.Api.Contexts;
 using Books.Api.Entities;
 using Books.Api.ExternalModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Books.Api.Services
@@ -16,12 +17,14 @@ namespace Books.Api.Services
     {
         private BooksContext _context;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<BooksRepository> _logger;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public BooksRepository(BooksContext context, IHttpClientFactory httpClientFactory)
+        public BooksRepository(BooksContext context, IHttpClientFactory httpClientFactory, ILogger<BooksRepository> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Book> GetBookAsync(Guid id)
@@ -95,7 +98,23 @@ namespace Books.Api.Services
             // Start the tasks
             var downloadBookCoverTasks = downloadBookCoverTasksQuery.ToList();
 
-            return await Task.WhenAll(downloadBookCoverTasks);
+            try
+            {
+                return await Task.WhenAll(downloadBookCoverTasks);
+            }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                // This contains info that we can use if we are interested
+                // operationCanceledException.CancellationToken.
+
+                _logger.LogInformation($"{operationCanceledException.Message}");
+                foreach (var task in downloadBookCoverTasks)
+                {
+                    _logger.LogInformation($"Task {task.Id} has status {task.Status}");
+                }
+
+                return new List<BookCover>();
+            }
         }
 
         private async Task<BookCover> DownloadBookCoverAsync(HttpClient httpClient, string bookCoverUrl, CancellationToken cancellationToken)
