@@ -71,19 +71,43 @@ namespace Books.Api.Services
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover5",
             };
 
-            foreach (var bookCoverUrl in bookCoverUrls)
-            {
-                var response = await httpClient
-                    .GetAsync(bookCoverUrl);
+            //foreach (var bookCoverUrl in bookCoverUrls)
+            //{
+            //    var response = await httpClient
+            //        .GetAsync(bookCoverUrl);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    bookCovers.Add(JsonConvert.DeserializeObject<BookCover>(
-                        await response.Content.ReadAsStringAsync()));
-                }
+            //    if (response.IsSuccessStatusCode)
+            //    {
+            //        bookCovers.Add(JsonConvert.DeserializeObject<BookCover>(
+            //            await response.Content.ReadAsStringAsync()));
+            //    }
+            //}
+
+            // Create the tasks
+            var downloadBookCoverTasksQuery =
+                from bookCoverUrl
+                in bookCoverUrls
+                select DownloadBookCoverAsync(httpClient, bookCoverUrl);
+
+            // Start the tasks
+            var downloadBookCoverTasks = downloadBookCoverTasksQuery.ToList();
+
+            return await Task.WhenAll(downloadBookCoverTasks);
+        }
+
+        private async Task<BookCover> DownloadBookCoverAsync(HttpClient httpClient, string bookCoverUrl)
+        {
+            var response = await httpClient
+                .GetAsync(bookCoverUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var bookCover = JsonConvert.DeserializeObject<BookCover>(
+                    await response.Content.ReadAsStringAsync());
+                return bookCover;
             }
 
-            return bookCovers;
+            return null;
         }
 
         public IEnumerable<Book> GetBooks()
