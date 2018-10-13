@@ -71,7 +71,8 @@ namespace Books.Api.Services
             var bookCoverUrls = new[]
             {
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover1",
-                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover2?returnFault=true",
+                //$"http://localhost:52644/api/bookcovers/{bookId}-dummycover2?returnFault=true",
+                $"http://localhost:52644/api/bookcovers/{bookId}-dummycover2",
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover3",
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover4",
                 $"http://localhost:52644/api/bookcovers/{bookId}-dummycover5",
@@ -115,10 +116,17 @@ namespace Books.Api.Services
 
                 return new List<BookCover>();
             }
+            catch (Exception exception)
+            {
+                _logger.LogError($"{exception.Message}");
+                throw;
+            }
         }
 
         private async Task<BookCover> DownloadBookCoverAsync(HttpClient httpClient, string bookCoverUrl, CancellationToken cancellationToken)
         {
+            //throw new Exception("Cannot download book cover; writer isn't finishing book fast enough.");
+
             var response = await httpClient
                 .GetAsync(bookCoverUrl, cancellationToken);
 
