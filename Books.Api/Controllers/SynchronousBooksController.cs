@@ -18,7 +18,12 @@ namespace Books.Api.Controllers
         [HttpGet]
         public IActionResult GetBooks()
         {
-            var bookEntities = _booksRepository.GetBooks();
+            //var bookEntities = _booksRepository.GetBooks();
+            var bookEntities = _booksRepository.GetBooksAsync().Result;
+
+            // Alternatively:
+            //_booksRepository.GetBooksAsync().Wait();
+
             return Ok(bookEntities);
         }
     }
