@@ -31,9 +31,9 @@ namespace Books.Api.Filters
             var (book, bookCovers) = ((Entities.Book,
                 IEnumerable<ExternalModels.BookCover>))resultFromAction.Value;
 
-            var mappedBook = Mapper.Map<BookWithCovers>(book);
-
-            resultFromAction.Value = Mapper.Map(bookCovers, mappedBook);
+            var mapper = (IMapper)context.HttpContext.RequestServices.GetService(typeof(IMapper));
+            var mappedBook = mapper.Map<BookWithCovers>(book);
+            resultFromAction.Value = mapper.Map(bookCovers, mappedBook);
 
             await next();
         }

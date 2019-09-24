@@ -19,7 +19,8 @@ namespace Books.Api.Filters
                 return;
             }
 
-            resultFromAction.Value = Mapper.Map<IEnumerable<Models.Book>>(resultFromAction.Value);
+            var mapper = (IMapper)context.HttpContext.RequestServices.GetService(typeof(IMapper));
+            resultFromAction.Value = mapper.Map<IEnumerable<Models.Book>>(resultFromAction.Value);
 
             await next();
         }

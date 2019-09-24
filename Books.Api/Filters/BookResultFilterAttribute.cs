@@ -18,7 +18,8 @@ namespace Books.Api.Filters
                 return;
             }
 
-            resultFromAction.Value = Mapper.Map<Models.Book>(resultFromAction.Value);
+            var mapper = (IMapper)context.HttpContext.RequestServices.GetService(typeof(IMapper));
+            resultFromAction.Value = mapper.Map<Models.Book>(resultFromAction.Value);
 
             await next();
         }
